@@ -11,28 +11,19 @@ public class Day02 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
-        int redLimit = 12;
-        int greenLimit = 13;
-        int blueLimit = 15;
-
-        int result = 0;
-        foreach (Game game in _input)
-        {
-            if (game.Rounds.All(r => r.Red <= redLimit && r.Green <= greenLimit && r.Blue <= blueLimit))
-            {
-                result += game.Index;
-            }
-        }
+        int result = _input.Sum(game => game.Rounds.All(r => r.IsPossible()) ? game.Index : 0);
         return new(result.ToString());
     }
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        return new(_input.Sum(game => game.MinPower()).ToString());
     }
 
     private record Game(int Index, Round[] Rounds)
     {
+        public long MinPower() => Rounds.Max(r => r.Red) * Rounds.Max(r => r.Green) * Rounds.Max(r => r.Blue);  
+
         public static Game Parse(string input)
         {
             string[] parts = input.Split(":");
@@ -44,6 +35,8 @@ public class Day02 : BaseDay
 
     private record Round(int Red, int Green, int Blue)
     {
+        public bool IsPossible() => Red <= 12 && Green <= 13 && Blue <= 14;
+
         public static Round Parse(string[] round)
         {
             int red = 0, green = 0, blue = 0;
