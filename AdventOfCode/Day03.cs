@@ -40,14 +40,7 @@ public class Day03 : BaseDay
 
                         foreach (Point gear in gears)
                         {
-                            if (gearsWithParts.ContainsKey(gear))
-                            {
-                                gearsWithParts[gear].Add(part);
-                            }
-                            else
-                            {
-                                gearsWithParts[gear] = new List<int> { part };
-                            }
+                            AddGearWithPart(gearsWithParts, gear, part);
                         }
                     }
                     j += length;
@@ -99,36 +92,24 @@ public class Day03 : BaseDay
             if (isSymbol(i - 1, k))
             {
                 isPartNumber = true;
-                if (_input[i - 1][k] == '*')
-                { 
-                    gears.Add(new Point(i - 1, k));
-                }
+                AddGear(i - 1, k, gears);
             }
             if (isSymbol(i + 1, k))
             {
                 isPartNumber = true;
-                if (_input[i + 1][k] == '*')
-                {
-                    gears.Add(new Point(i + 1, k));
-                }
+                AddGear(i + 1, k, gears);
             }
         }
 
         if (isSymbol(i, j - 1) )
         {
             isPartNumber = true;
-            if (_input[i][j-1] == '*')
-            {
-                gears.Add(new Point(i, j-1));
-            }
+            AddGear(i, j - 1, gears);
         }
         if (isSymbol(i, j + length))
         {
             isPartNumber = true;
-            if (_input[i][j + length] == '*')
-            {
-                gears.Add(new Point(i, j + length));
-            }
+            AddGear(i, j + length, gears);
         }
 
         return (isPartNumber, gears);
@@ -147,6 +128,26 @@ public class Day03 : BaseDay
         }
 
         return !char.IsDigit(_input[i][j]) && _input[i][j] != '.';
+    }
+
+    private void AddGear(int i, int j, List<Point> gears)
+    {
+        if (_input[i][j] == '*')
+        {
+            gears.Add(new Point(i, j));
+        }
+    }
+
+    private void AddGearWithPart(Dictionary<Point, List<int>> gearsWithParts, Point gear, int part)
+    {
+        if (gearsWithParts.ContainsKey(gear))
+        {
+            gearsWithParts[gear].Add(part);
+        }
+        else
+        {
+            gearsWithParts[gear] = new List<int> { part };
+        }
     }
 
     private record Point(int I, int J);
