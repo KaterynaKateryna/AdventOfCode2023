@@ -24,7 +24,24 @@ public class Day04 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        Dictionary<int, int> cardsCount = new Dictionary<int, int>();
+
+        for (int i = 0; i < _input.Length; ++i)
+        {
+            cardsCount[i] = 1;
+        }
+
+        for (int i = 0; i < _input.Length; ++i)
+        {
+            int matches = _input[i].WinningNumbers.Intersect(_input[i].YourNumbers).Count();
+            for (int j = i + 1; j <= i + matches; ++j)
+            {
+                cardsCount[j] += cardsCount[i];
+            }
+        }
+
+        int sum = cardsCount.Values.Sum(v => v);
+        return new(sum.ToString());
     }
 
     private record Card(int[] WinningNumbers, int[] YourNumbers)
