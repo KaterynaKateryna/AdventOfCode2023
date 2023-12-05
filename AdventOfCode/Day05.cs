@@ -45,7 +45,7 @@ public class Day05 : BaseDay
             seeds[i / 2] = new Range(_seeds[i], _seeds[i + 1]);
         }
 
-        long location = seeds.Select(s => FindRanges(s)).SelectMany(l => l).Min(r => r.Start);
+        long location = seeds.Select(s => FindLocationRanges(s)).SelectMany(l => l).Min(r => r.Start);
 
         return new(location.ToString());
     }
@@ -60,7 +60,7 @@ public class Day05 : BaseDay
         return value;
     }
 
-    private List<Range> FindRanges(Range range)
+    private List<Range> FindLocationRanges(Range range)
     {
         List<Range> ranges = [ range ];
         for (int i = 0; i < _maps.Length; ++i)
