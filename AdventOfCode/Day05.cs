@@ -25,6 +25,11 @@ public class Day05 : BaseDay
 
             _maps[i] = map;
         }
+
+        for (int i = 0; i < _maps.Length; ++i)
+        {
+            _maps[i] = _maps[i].OrderBy(m => m.SourceRangeStart).ToArray();
+        }
     }
 
     public override ValueTask<string> Solve_1()
@@ -34,7 +39,15 @@ public class Day05 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        Range[] seeds = new Range[_seeds.Length / 2];
+        for (int i = 0; i < _seeds.Length; i += 2)
+        {
+            seeds[i / 2] = new Range(_seeds[i], _seeds[i + 1]);
+        }
+
+        long location = seeds.Select(s => FindRangeStarts(s)).SelectMany(l => l).Min();
+
+        return new(location.ToString());
     }
 
     private long FindLocation(long seed)
@@ -47,18 +60,72 @@ public class Day05 : BaseDay
         return value;
     }
 
+    private List<long> FindRangeStarts(Range range)
+    {
+        List<Range> ranges = [ range ];
+        for (int i = 0; i < _maps.Length; ++i)
+        {
+            List<Range> rangesRes = new List<Range>();
+            foreach(Range r in ranges)
+            {
+                var dest = GetDestinationRanges(r, _maps[i]);
+                rangesRes.AddRange(dest);
+            }
+            ranges = rangesRes;
+        }
+        return ranges.Select(r => r.Start).ToList();
+    }
+
     private long GetDestination(long source, Map[] maps)
     {
         foreach (Map map in maps)
         {
-            if (source >= map.SourceLengthStart && source < (map.SourceLengthStart + map.RangeLength))
+            if (source >= map.SourceRangeStart && source < (map.SourceRangeStart + map.RangeLength))
             { 
-                long diff = source - map.SourceLengthStart;
+                long diff = source - map.SourceRangeStart;
                 return map.DestinationRangeStart + diff;
             }
         }
         return source;
     }
 
-    private record Map(long DestinationRangeStart, long SourceLengthStart, long RangeLength);
+    private List<Range> GetDestinationRanges(Range range, Map[] maps)
+    {
+        List<Range> result = new List<Range>();
+        long i = range.Start;
+        long length = range.RangeLength;
+
+        foreach (Map map in maps)
+        {
+            if (i < map.SourceRangeStart && length > 0)
+            {
+                Range r = new Range(i, map.SourceRangeStart - i > length ? length : map.SourceRangeStart - i);
+                result.Add(r);
+                i += r.RangeLength;
+                length -= r.RangeLength;
+            }
+
+            if (i >= map.SourceRangeStart && i < (map.SourceRangeStart + map.RangeLength) && length > 0)
+            {
+                long diff = i - map.SourceRangeStart;
+                long overlap = length > (map.SourceRangeStart + map.RangeLength - i) ? (map.SourceRangeStart + map.RangeLength - i) : length;
+                Range r = new Range(map.DestinationRangeStart + diff, overlap);
+                result.Add(r);
+                i += r.RangeLength;
+                length -= r.RangeLength;
+            }
+        }
+
+        if (i < range.Start + range.RangeLength)
+        {
+            Range r = new Range(i, range.Start + range.RangeLength - i);
+            result.Add(r);
+        }
+
+        return result;
+    }
+
+    private record Map(long DestinationRangeStart, long SourceRangeStart, long RangeLength);
+
+    private record Range(long Start, long RangeLength);
 }
