@@ -38,7 +38,14 @@ public class Day06 : BaseDay
         for (long i = 0; i < race.Time; ++i)
         {
             long distance = (race.Time - i) * i;
-            waysToWin += distance > race.Distance ? 1 : 0;
+            if (distance > race.Distance)
+            {
+                waysToWin++;
+            }
+            else if (waysToWin > 0)
+            {
+                break;
+            }
         }
         return waysToWin;
     }
