@@ -35,19 +35,19 @@ public class Day06 : BaseDay
     private long GetWaysToWin(Race race)
     {
         long waysToWin = 0;
-        for (long i = 0; i < race.Time; ++i)
+        for (long i = race.Time / 2; i > 0; --i)
         {
             long distance = (race.Time - i) * i;
             if (distance > race.Distance)
             {
                 waysToWin++;
             }
-            else if (waysToWin > 0)
+            else
             {
                 break;
             }
         }
-        return waysToWin;
+        return (waysToWin * 2) - (race.Time % 2 == 0 ? 1 : 0);
     }
 
     private record Race(long Time, long Distance);
