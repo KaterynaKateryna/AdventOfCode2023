@@ -2,77 +2,80 @@
 
 public class Day07 : BaseDay
 {
-    private Hand[] _hands;
+    public override ValueTask<string> Solve_1() => Solve(Hand.Parse);
 
-    public Day07() 
-    {
-        _hands = File.ReadAllLines(InputFilePath).Select(Hand.Parse).ToArray();
-    }
+    public override ValueTask<string> Solve_2() => Solve(HandV2.ParseV2);
 
-    public override ValueTask<string> Solve_1()
+    private ValueTask<string> Solve(Func<string, Hand> Parse)
     {
-        Array.Sort(_hands);
+        Hand[] hands = File.ReadAllLines(InputFilePath).Select(Parse).ToArray();
+        Array.Sort(hands);
 
         long result = 0;
-        for (int i = 0; i < _hands.Length; ++i)
+        for (int i = 0; i < hands.Length; ++i)
         {
-            result += _hands[i].Bid * (i + 1);
+            result += hands[i].Bid * (i + 1);
         }
 
         return new(result.ToString());
     }
 
-    public override ValueTask<string> Solve_2()
-    {
-        return new("TBD");
-    }
-
     private record Hand(string Cards, int Bid) : IComparable<Hand>
     {
-        public HandType HandType { get; init; }
+        public HandType HandType { get; private set; }
 
         public static Hand Parse(string line)
         {
             string[] parts = line.Split(" ");
-            return new Hand(parts[0], int.Parse(parts[1]))
-            { 
-                HandType = GetHandType(parts[0])
-            };
+            Hand hand = new Hand(parts[0], int.Parse(parts[1]));
+            hand.InitHandType();
+            return hand;
         }
 
-        private static HandType GetHandType(string cards)
+        public void InitHandType()
+        {
+            Dictionary<char, int> dict = GetCardsDictionary(Cards);
+
+            if (dict.Any(kv => kv.Value == 5))
+            {
+                HandType = HandType.FiveOfAKind;
+            }
+            else if (dict.Any(kv => kv.Value == 4))
+            {
+                HandType = HandType.FourOfAKind;
+            }
+            else if (dict.Any(kv => kv.Value == 3) && dict.Any(kv => kv.Value == 2))
+            {
+                HandType = HandType.FullHouse;
+            }
+            else if (dict.Any(kv => kv.Value == 3))
+            {
+                HandType = HandType.ThreeOfAKind;
+            }
+            else if (dict.Count(kv => kv.Value == 2) == 2)
+            {
+                HandType = HandType.TwoPair;
+            }
+            else if (dict.Count(kv => kv.Value == 2) == 1)
+            {
+                HandType = HandType.OnePair;
+            }
+            else
+            {
+                HandType = HandType.HighCard;
+            }
+        }
+
+        protected virtual Type CardType => typeof(Card);
+
+        protected virtual Dictionary<char, int> GetCardsDictionary(string cards)
         {
             Dictionary<char, int> dict = new Dictionary<char, int>();
             foreach (char ch in cards)
             {
                 dict[ch] = dict.ContainsKey(ch) ? dict[ch] + 1 : 1;
             }
-
-            if (dict.Any(kv => kv.Value == 5))
-            {
-                return HandType.FiveOfAKind;
-            }
-            if (dict.Any(kv => kv.Value == 4))
-            {
-                return HandType.FourOfAKind;
-            }
-            if (dict.Any(kv => kv.Value == 3) && dict.Any(kv => kv.Value == 2))
-            {
-                return HandType.FullHouse;
-            }
-            if (dict.Any(kv => kv.Value == 3))
-            {
-                return HandType.ThreeOfAKind;
-            }
-            if (dict.Count(kv => kv.Value == 2) == 2)
-            {
-                return HandType.TwoPair;
-            }
-            if (dict.Count(kv => kv.Value == 2) == 1)
-            {
-                return HandType.OnePair;
-            }
-            return HandType.HighCard;
+            return dict;
         }
 
         public int CompareTo(Hand other)
@@ -93,13 +96,62 @@ public class Day07 : BaseDay
                     continue;
                 }
 
-                Card a = (Card)Enum.Parse(typeof(Card), "_" + this.Cards[i].ToString());
-                Card b = (Card)Enum.Parse(typeof(Card), "_" + other.Cards[i].ToString());
+                int a = (int)Enum.Parse(CardType, "_" + this.Cards[i].ToString());
+                int b = (int)Enum.Parse(CardType, "_" + other.Cards[i].ToString());
 
                 return a - b;
             }
 
             return 0;
+        }
+    }
+
+    private record HandV2(string Cards, int Bid) : Hand(Cards, Bid)
+    {
+        public static Hand ParseV2(string line)
+        {
+            string[] parts = line.Split(" ");
+            HandV2 hand = new HandV2(parts[0], int.Parse(parts[1]));
+            hand.InitHandType();
+            return hand;
+        }
+
+        protected override Type CardType => typeof(CardV2);
+
+        protected override Dictionary<char, int> GetCardsDictionary(string cards)
+        {
+            Dictionary<char, int> dict = new Dictionary<char, int>();
+            int jCount = 0;
+            foreach (char ch in cards)
+            {
+                if (ch == 'J')
+                {
+                    jCount++;
+                    continue;
+                }
+                dict[ch] = dict.ContainsKey(ch) ? dict[ch] + 1 : 1;
+            }
+
+            if (!dict.Any())
+            {
+                dict['J'] = jCount;
+                return dict;
+            }
+
+            char key = dict.First().Key; 
+            int value = dict.First().Value;
+            foreach (var kv in dict)
+            {
+                if (kv.Value > value)
+                { 
+                    key = kv.Key;
+                    value = kv.Value;
+                }
+            }
+
+            dict[key] += jCount;
+
+            return dict;
         }
     }
 
@@ -129,5 +181,22 @@ public class Day07 : BaseDay
         _Q = 12,
         _K = 13,
         _A = 14
+    }
+
+    private enum CardV2
+    {
+        _J = 1,
+        _2 = 2,
+        _3 = 3,
+        _4 = 4,
+        _5 = 5,
+        _6 = 6,
+        _7 = 7,
+        _8 = 8,
+        _9 = 9,
+        _T = 10,
+        _Q = 11,
+        _K = 12,
+        _A = 13
     }
 }
