@@ -18,10 +18,29 @@ public class Day09 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        long sum = _input.Aggregate(0L, (x, y) => x += GetPreviousValue(y));
+        return new(sum.ToString());
     }
 
     private long GetNextValue(long[] line)
+    {
+        List<long[]> lines = GetDiffsList(line);
+        return lines.Sum(l => l.Last());
+    }
+
+    private long GetPreviousValue(long[] line)
+    {
+        List<long[]> lines = GetDiffsList(line);
+
+        long res = 0;
+        for(int i = lines.Count - 1; i >=0; --i)
+        {
+            res = lines[i][0] - res;
+        }
+        return res;
+    }
+
+    private List<long[]> GetDiffsList(long[] line)
     {
         List<long[]> lines = [line];
 
@@ -31,7 +50,7 @@ public class Day09 : BaseDay
             lines.Add(diffs);
         }
 
-        return lines.Sum(l => l.Last());
+        return lines;
     }
 
     private long[] GetDiffs(long[] line) 
