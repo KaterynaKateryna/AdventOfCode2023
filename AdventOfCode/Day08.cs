@@ -50,7 +50,55 @@ internal class Day08 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        string[] current = _map.Keys.Where(x => x[2] == 'A').ToArray();
+
+        List<ulong> found = new List<ulong>();
+
+        for (int i = 0; i < current.Length; ++i)
+        {
+            ulong steps = 0;
+            int instruction = 0;
+            string cur = current[i];
+            while (cur[2] != 'Z' || instruction != 0)
+            {
+                char ins = _instructions[instruction];
+
+                Turns turns = _map[cur];
+                if (_instructions[instruction] == 'L')
+                {
+                    cur = turns.Left;
+                }
+                else
+                {
+                    cur = turns.Right;
+                }
+                steps++;
+                instruction = (instruction + 1) % _instructions.Length;
+            }
+            found.Add(steps);
+        }
+
+        ulong leastCommonMultiplier = found.SelectMany(GetMultipliers).Distinct().Aggregate((a, b) => a * b);
+
+        return new(leastCommonMultiplier.ToString());
+    }
+
+    private List<ulong> GetMultipliers(ulong number)
+    {
+        List<ulong> res = new List<ulong>();
+        ulong cur = 2;
+        ulong num = number;
+        while (cur <= (num / 2))
+        {
+            while (num % cur == 0)
+            { 
+                res.Add(cur);
+                num /= cur;
+            }
+            cur++;
+        }
+        res.Add(num);
+        return res;
     }
 
     private record Turns(string Left, string Right);
