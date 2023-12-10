@@ -11,7 +11,6 @@ public class Day10 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
-        
         Point start = GetStart();
         (char value, Direction from)[] startOptions = 
         [
@@ -84,10 +83,6 @@ public class Day10 : BaseDay
             case ('J', Direction.North):
             case ('7', Direction.South):
                 return point.J - 1 < 0 ? null : (new Point(point.I, point.J - 1, _input[point.I][point.J - 1]), Direction.East);
-            case ('.', Direction.North):
-            case ('.', Direction.East):
-            case ('.', Direction.South):
-            case ('.', Direction.West):
             default:
                 return null;
         }
