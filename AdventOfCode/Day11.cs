@@ -11,6 +11,16 @@ public class Day11 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
+        return new(Solve(2).ToString());
+    }
+
+    public override ValueTask<string> Solve_2()
+    {
+        return new(Solve(1000000).ToString());
+    }
+
+    private long Solve(int factor)
+    {
         List<Galaxy> galaxies = new List<Galaxy>();
 
         for (int i = 0; i < _input.Length; ++i)
@@ -24,35 +34,29 @@ public class Day11 : BaseDay
             }
         }
 
-        List<Galaxy> expanded = Expand(galaxies);
+        List<Galaxy> expanded = Expand(galaxies, factor);
 
-        int sum = 0;
+        long sum = 0;
         for (int i = 0; i < expanded.Count - 1; ++i)
         {
             for (int j = i + 1; j < expanded.Count; ++j)
             {
-                int path = GetPath(expanded[i], expanded[j]);
+                long path = GetPath(expanded[i], expanded[j]);
                 sum += path;
             }
         }
-
-        return new(sum.ToString());
+        return sum;
     }
 
-    private int GetPath(Galaxy galaxy1, Galaxy galaxy2)
+    private long GetPath(Galaxy galaxy1, Galaxy galaxy2)
     {
-        int iDiff = Math.Abs(galaxy1.I - galaxy2.I);
-        int jDiff = Math.Abs(galaxy1.J - galaxy2.J);
-        int path = iDiff + jDiff;
+        long iDiff = Math.Abs(galaxy1.I - galaxy2.I);
+        long jDiff = Math.Abs(galaxy1.J - galaxy2.J);
+        long path = iDiff + jDiff;
         return path;
     }
 
-    public override ValueTask<string> Solve_2()
-    {
-        return new("TBD");
-    }
-
-    private List<Galaxy> Expand(List<Galaxy> galaxies)
+    private List<Galaxy> Expand(List<Galaxy> galaxies, int factor)
     {
         List<int> iToExpand = new List<int>();
         List<int> jToExpand = new List<int>();
@@ -74,12 +78,12 @@ public class Day11 : BaseDay
         List<Galaxy> expanded = new List<Galaxy>();
         for (int i = 0; i < galaxies.Count; ++i)
         {
-            int newI = galaxies[i].I + iToExpand.Count(c => c < galaxies[i].I);
-            int newJ = galaxies[i].J + jToExpand.Count(c => c < galaxies[i].J);
+            long newI = galaxies[i].I + iToExpand.Count(c => c < galaxies[i].I) * (factor - 1);
+            long newJ = galaxies[i].J + jToExpand.Count(c => c < galaxies[i].J) * (factor - 1);
             expanded.Add(new Galaxy(newI, newJ));
         }
         return expanded;
     }
 
-    private record Galaxy(int I, int J);
+    private record Galaxy(long I, long J);
 }
