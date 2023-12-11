@@ -17,11 +17,65 @@ public class Day10 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        List<Point> points = GetLoopPoints();
-        int enclosed = 0;
+        List<Point> loopPoints = GetLoopPoints();
+        //List<Point> outsidePoints = GetOutsidePoints(loopPoints);
 
+        //List<Point> insidePoints = new List<Point>();
 
-        return new("TBD");
+        //for (int i = -1; i < _input.Length + 1; ++i)
+        //{
+        //    for (int j = -1; j < _input[0].Length + 1; ++j)
+        //    
+        //        if (!loopPoints.Any(p => p.I == i && p.J == j) && !outsidePoints.Any(p => p.I == i && p.J == j))
+        //        {
+        //            insidePoints.Add(new Point(i, j, 'X'));
+        //        }
+        //    }
+        //}
+
+        var insidePoints = GetInsidePoints(loopPoints);
+        return new(insidePoints.Count.ToString());
+    }
+
+    private List<Point> GetInsidePoints(List<Point> loopPoints)
+    {
+        List<Point> points = new List<Point>();
+        for (int i = 0; i < _input.Length; ++i)
+        {
+            var lineLoopPoints = loopPoints.Where(p => p.I == i);
+            bool inside = false;
+            for (int j = 0; j < _input[0].Length; ++j)
+            {
+                Point p = lineLoopPoints.SingleOrDefault(p => p.I == i && p.J == j);
+                if (p != null)
+                {
+                    if (p.Value == '|')
+                    {
+                        inside = !inside;
+                    }
+                    else if (p.Value == 'L' || p.Value == 'F')
+                    {
+                        Point nextP = null!;
+                        do
+                        {
+                            j++;
+                            nextP = lineLoopPoints.Single(p => p.I == i && p.J == j);
+                        } 
+                        while (nextP.Value != '7' && nextP.Value != 'J');
+
+                        if ((p.Value == 'L' && nextP.Value == '7') || (p.Value == 'F' && nextP.Value == 'J'))
+                        {
+                            inside = !inside;
+                        }
+                    }
+                }
+                else if (inside)
+                {
+                    points.Add(new Point(i, j, 'I'));
+                }
+            }
+        }
+        return points;
     }
 
     private Point GetStart()
@@ -93,6 +147,7 @@ public class Day10 : BaseDay
 
             if (next?.Value == 'S' && from == nextFrom)
             {
+                points.Remove(next);
                 return points;
             }
         }
