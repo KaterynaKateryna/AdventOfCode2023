@@ -18,21 +18,6 @@ public class Day10 : BaseDay
     public override ValueTask<string> Solve_2()
     {
         List<Point> loopPoints = GetLoopPoints();
-        //List<Point> outsidePoints = GetOutsidePoints(loopPoints);
-
-        //List<Point> insidePoints = new List<Point>();
-
-        //for (int i = -1; i < _input.Length + 1; ++i)
-        //{
-        //    for (int j = -1; j < _input[0].Length + 1; ++j)
-        //    
-        //        if (!loopPoints.Any(p => p.I == i && p.J == j) && !outsidePoints.Any(p => p.I == i && p.J == j))
-        //        {
-        //            insidePoints.Add(new Point(i, j, 'X'));
-        //        }
-        //    }
-        //}
-
         var insidePoints = GetInsidePoints(loopPoints);
         return new(insidePoints.Count.ToString());
     }
@@ -55,15 +40,15 @@ public class Day10 : BaseDay
                     }
                     else if (p.Value == 'L' || p.Value == 'F')
                     {
-                        Point nextP = null!;
+                        char nextP = 'X';
                         do
                         {
                             j++;
-                            nextP = lineLoopPoints.Single(p => p.I == i && p.J == j);
+                            nextP = _input[i][j];
                         } 
-                        while (nextP.Value != '7' && nextP.Value != 'J');
+                        while (nextP != '7' && nextP != 'J');
 
-                        if ((p.Value == 'L' && nextP.Value == '7') || (p.Value == 'F' && nextP.Value == 'J'))
+                        if ((p.Value == 'L' && nextP == '7') || (p.Value == 'F' && nextP == 'J'))
                         {
                             inside = !inside;
                         }
