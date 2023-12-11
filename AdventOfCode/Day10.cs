@@ -11,27 +11,30 @@ public class Day10 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
-        List<Point> points = GetLoopPoints();
-        return new((points.Count / 2).ToString());
+        List<Point> loopPoints = GetLoopPoints();
+        return new((loopPoints.Count / 2).ToString());
     }
 
     public override ValueTask<string> Solve_2()
     {
         List<Point> loopPoints = GetLoopPoints();
         var insidePoints = GetInsidePoints(loopPoints);
-        return new(insidePoints.Count.ToString());
+        return new(insidePoints.ToString());
     }
 
-    private List<Point> GetInsidePoints(List<Point> loopPoints)
+    private int GetInsidePoints(List<Point> loopPoints)
     {
-        List<Point> points = new List<Point>();
+        int insidePoints = 0;
         for (int i = 0; i < _input.Length; ++i)
         {
-            var lineLoopPoints = loopPoints.Where(p => p.I == i);
+            var lineLoopPoints = loopPoints.Where(p => p.I == i).ToList();
             bool inside = false;
+
             for (int j = 0; j < _input[0].Length; ++j)
             {
-                Point p = lineLoopPoints.SingleOrDefault(p => p.I == i && p.J == j);
+                Point p = lineLoopPoints.FirstOrDefault(p => p.I == i && p.J == j);
+                lineLoopPoints.Remove(p);
+
                 if (p != null)
                 {
                     if (p.Value == '|')
@@ -56,11 +59,11 @@ public class Day10 : BaseDay
                 }
                 else if (inside)
                 {
-                    points.Add(new Point(i, j, 'I'));
+                    insidePoints++;
                 }
             }
         }
-        return points;
+        return insidePoints;
     }
 
     private Point GetStart()
