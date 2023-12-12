@@ -17,6 +17,8 @@ public class Day12 : BaseDay
             string[] parts = line.Split(' ');
             string spring = parts[0];
             List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
+
+            spring = Preprocess(spring, groups);
             sum += GetPossibleArrangements(spring, groups);
         }
 
@@ -32,10 +34,39 @@ public class Day12 : BaseDay
         //    string spring = string.Join("?", Enumerable.Repeat(parts[0], 5));
         //    List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
         //    groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToList();
+
+        //    spring = Preprocess(spring, groups);
         //    sum += GetPossibleArrangements(spring, groups);
         //}
 
         return new(sum.ToString());
+    }
+
+    private string Preprocess(string spring, List<int> groups)
+    {
+        int groupLength = groups.Sum() + groups.Count - 1;
+        int springLength = spring.Length;
+
+        int index = 0;
+        foreach (var group in groups) 
+        {
+            int rightPos = index + group - 1;
+            int leftPos = springLength - groupLength;
+
+            if (leftPos <= rightPos)
+            {
+                char[] chars = spring.ToArray();
+                for (int i = leftPos; i <= rightPos; ++i)
+                {
+                    chars[i] = '#';
+                }
+                spring = new(chars);
+            }
+
+            groupLength -= (group + 1);
+            index += (group + 1);
+        }
+        return spring;
     }
 
     private int GetPossibleArrangements(string spring, List<int> groups, int index = 0)
@@ -71,7 +102,8 @@ public class Day12 : BaseDay
 
     private bool IsValid(string spring, List<int> groups)
     {
-        List<int> actualGroups = new List<int>();
+        List<int> groupsToCheck = new List<int>(groups);
+
         int activeGroup = 0;
         for (int i = 0; i < spring.Length; ++i)
         {
@@ -81,16 +113,30 @@ public class Day12 : BaseDay
             }
             else if (activeGroup > 0)
             {
-                actualGroups.Add(activeGroup);
-                activeGroup = 0;
+                if (groupsToCheck.FirstOrDefault() == activeGroup)
+                {
+                    groupsToCheck.Remove(activeGroup);
+                    activeGroup = 0;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
         if (activeGroup > 0)
         {
-            actualGroups.Add(activeGroup);
-            activeGroup = 0;
+            if (groupsToCheck.FirstOrDefault() == activeGroup)
+            {
+                groupsToCheck.Remove(activeGroup);
+                activeGroup = 0;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        return actualGroups.SequenceEqual(groups);
+        return !groupsToCheck.Any();
     }
 }
