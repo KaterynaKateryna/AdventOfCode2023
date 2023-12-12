@@ -17,7 +17,7 @@ public class Day12 : BaseDay
             string[] parts = line.Split(' ');
             string spring = parts[0];
             List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
-            sum += GetPossibleArrangements(spring, groups, new List<string>());
+            sum += GetPossibleArrangements(spring, groups);
         }
 
         return new(sum.ToString());
@@ -38,13 +38,12 @@ public class Day12 : BaseDay
         return new(sum.ToString());
     }
 
-    private int GetPossibleArrangements(string spring, List<int> groups, List<string> valid, int index = 0)
+    private int GetPossibleArrangements(string spring, List<int> groups, int index = 0)
     {
-        if (index == spring.Length && spring.All(x => x != '?'))
+        if (index == spring.Length)
         {
-            if (IsValid(spring, groups) && !valid.Contains(spring))
+            if (IsValid(spring, groups))
             {
-                valid.Add(spring);
                 return 1;
             }
             return 0;
@@ -56,15 +55,15 @@ public class Day12 : BaseDay
         {
             char[] option = spring.ToArray();
             option[index] = '#';
-            int a = GetPossibleArrangements(new string(option), groups, valid, index + 1);
+            int a = GetPossibleArrangements(new string(option), groups, index + 1);
             count += a;
             option[index] = '.';
-            int b = GetPossibleArrangements(new string(option), groups, valid, index + 1);
+            int b = GetPossibleArrangements(new string(option), groups, index + 1);
             count += b;
         }
         else
         {
-            count += GetPossibleArrangements(spring, groups, valid, index + 1);
+            count += GetPossibleArrangements(spring, groups, index + 1);
         }
        
         return count;
