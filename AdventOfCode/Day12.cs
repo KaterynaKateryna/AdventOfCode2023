@@ -1,5 +1,4 @@
-﻿
-namespace AdventOfCode;
+﻿namespace AdventOfCode;
 
 public class Day12 : BaseDay
 {
@@ -12,42 +11,62 @@ public class Day12 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
-        return new(_input.Sum(GetPossibleArrangements).ToString());
+        long sum = 0;
+        foreach (var line in _input)
+        {
+            string[] parts = line.Split(' ');
+            string spring = parts[0];
+            List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
+            sum += GetPossibleArrangements(spring, groups, new List<string>());
+        }
+
+        return new(sum.ToString());
     }
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        long sum = 0;
+        //foreach (var line in _input)
+        //{
+        //    string[] parts = line.Split(' ');
+        //    string spring = string.Join("?", Enumerable.Repeat(parts[0], 5));
+        //    List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
+        //    groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToList();
+        //    sum += GetPossibleArrangements(spring, groups);
+        //}
+
+        return new(sum.ToString());
     }
 
-    private int GetPossibleArrangements(string line)
+    private int GetPossibleArrangements(string spring, List<int> groups, List<string> valid, int index = 0)
     {
-        string[] parts = line.Split(' ');
-        string spring = parts[0];
-        List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
+        if (index == spring.Length && spring.All(x => x != '?'))
+        {
+            if (IsValid(spring, groups) && !valid.Contains(spring))
+            {
+                valid.Add(spring);
+                return 1;
+            }
+            return 0;
+        }
 
         int count = 0;
-        List<int> unknowns = new List<int>();
-        for (int i = 0; i < spring.Length; ++i)
-        {
-            if (spring[i] == '?')
-            { 
-                unknowns.Add(i);
-            }
-        }
 
-        List<List<bool>> arrangements = GetAllArrangements(unknowns.Count);
-        for (int i = 0; i < arrangements.Count; ++i)
+        if (spring[index] == '?')
         {
-            char[] mutation = spring.ToCharArray();
-            for (int j = 0; j < unknowns.Count; ++j)
-            {
-                mutation[unknowns[j]] = arrangements[i][j] ? '#' : '.';
-            }
-            bool isValid = IsValid(new string(mutation), groups);
-            count += isValid ? 1 : 0;
+            char[] option = spring.ToArray();
+            option[index] = '#';
+            int a = GetPossibleArrangements(new string(option), groups, valid, index + 1);
+            count += a;
+            option[index] = '.';
+            int b = GetPossibleArrangements(new string(option), groups, valid, index + 1);
+            count += b;
         }
-
+        else
+        {
+            count += GetPossibleArrangements(spring, groups, valid, index + 1);
+        }
+       
         return count;
     }
 
@@ -74,27 +93,5 @@ public class Day12 : BaseDay
         }
 
         return actualGroups.SequenceEqual(groups);
-    }
-
-    private List<List<bool>> GetAllArrangements(int length)
-    {
-        if (length == 0)
-        {
-            return new List<List<bool>>();
-        }
-
-        if (length == 1)
-        {
-            List<List<bool>> res = [[false], [true]];
-            return res;
-        }
-
-        List<List<bool>> arr = GetAllArrangements(length - 1);
-        List<List<bool>> f = arr.Select(x => x.Append(false).ToList()).ToList();
-        List<List<bool>> t = arr.Select(x => x.Append(true).ToList()).ToList();
-
-        f.AddRange(t);
-
-        return f;
     }
 }
