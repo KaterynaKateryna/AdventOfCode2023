@@ -16,7 +16,7 @@ public class Day12 : BaseDay
         {
             string[] parts = line.Split(' ');
             char[] spring = parts[0].ToArray();
-            List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
+            int[] groups = parts[1].Split(',').Select(x => int.Parse(x)).ToArray();
 
             Preprocess(spring, groups);
             sum += GetPossibleArrangements(spring, groups);
@@ -32,8 +32,8 @@ public class Day12 : BaseDay
         {
             string[] parts = line.Split(' ');
             char[] spring = string.Join("?", Enumerable.Repeat(parts[0], 5)).ToArray();
-            List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
-            groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToList();
+            int[] groups = parts[1].Split(',').Select(x => int.Parse(x)).ToArray();
+            groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToArray();
 
             Preprocess(spring, groups);
             sum += GetPossibleArrangements(spring, groups);
@@ -42,9 +42,9 @@ public class Day12 : BaseDay
         return new(sum.ToString());
     }
 
-    private void Preprocess(char[] spring, List<int> groups)
+    private void Preprocess(char[] spring, int[] groups)
     {
-        int groupLength = groups.Sum() + groups.Count - 1;
+        int groupLength = groups.Sum() + groups.Length - 1;
         int springLength = spring.Length;
 
         int index = 0;
@@ -73,7 +73,7 @@ public class Day12 : BaseDay
         }
     }
 
-    private int GetPossibleArrangements(char[] spring, List<int> groups, int index = 0, int curGroupIndex = 0)
+    private int GetPossibleArrangements(char[] spring, int[] groups, int index = 0, int curGroupIndex = 0)
     {
         if (index == spring.Length)
         {
@@ -119,14 +119,14 @@ public class Day12 : BaseDay
         return count;
     }
 
-    private (bool isValid, int curGroupIndex) IsValid(char[] spring, List<int> groups, int index, int curGroupIndex)
+    private (bool isValid, int curGroupIndex) IsValid(char[] spring, int[] groups, int index, int curGroupIndex)
     {
         if (index == spring.Length)
         {
-            return (curGroupIndex == groups.Count, curGroupIndex);
+            return (curGroupIndex == groups.Length, curGroupIndex);
         }
 
-        int cur = curGroupIndex == groups.Count ? 0 : groups[curGroupIndex];
+        int cur = curGroupIndex == groups.Length ? 0 : groups[curGroupIndex];
 
         if (spring[index] == '.')
         {
