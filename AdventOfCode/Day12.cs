@@ -28,16 +28,16 @@ public class Day12 : BaseDay
     public override ValueTask<string> Solve_2()
     {
         long sum = 0;
-        //foreach (var line in _input)
-        //{
-        //    string[] parts = line.Split(' ');
-        //    string spring = string.Join("?", Enumerable.Repeat(parts[0], 5));
-        //    List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
-        //    groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToList();
+        foreach (var line in _input)
+        {
+            string[] parts = line.Split(' ');
+            string spring = string.Join("?", Enumerable.Repeat(parts[0], 5));
+            List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
+            groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToList();
 
-        //    spring = Preprocess(spring, groups);
-        //    sum += GetPossibleArrangements(spring, groups);
-        //}
+            spring = Preprocess(spring, groups);
+            sum += GetPossibleArrangements(spring, groups);
+        }
 
         return new(sum.ToString());
     }
@@ -50,6 +50,13 @@ public class Day12 : BaseDay
         int index = 0;
         foreach (var group in groups) 
         {
+            for (int i = index; i < index + group; ++i)
+            {
+                if (spring[i] == '.')
+                {
+                    index = i + 1;
+                }
+            }
             int rightPos = index + group - 1;
             int leftPos = springLength - groupLength;
 
@@ -73,7 +80,7 @@ public class Day12 : BaseDay
     {
         if (index == spring.Length)
         {
-            if (IsValid(spring, groups))
+            if (IsValid(spring, groups, spring.Length))
             {
                 return 1;
             }
@@ -86,11 +93,20 @@ public class Day12 : BaseDay
         {
             char[] option = spring.ToArray();
             option[index] = '#';
-            int a = GetPossibleArrangements(new string(option), groups, index + 1);
-            count += a;
+            string optionA = new string(option);
+            if (IsValid(optionA, groups, index + 1))
+            {
+                int a = GetPossibleArrangements(optionA, groups, index + 1);
+                count += a;
+            }
+
             option[index] = '.';
-            int b = GetPossibleArrangements(new string(option), groups, index + 1);
-            count += b;
+            string optionB = new string(option);
+            if (IsValid(optionB, groups, index + 1))
+            {
+                int b = GetPossibleArrangements(optionB, groups, index + 1);
+                count += b;
+            }
         }
         else
         {
@@ -100,12 +116,12 @@ public class Day12 : BaseDay
         return count;
     }
 
-    private bool IsValid(string spring, List<int> groups)
+    private bool IsValid(string spring, List<int> groups, int length)
     {
         List<int> groupsToCheck = new List<int>(groups);
 
         int activeGroup = 0;
-        for (int i = 0; i < spring.Length; ++i)
+        for (int i = 0; i < length; ++i)
         {
             if (spring[i] == '#')
             {
@@ -126,7 +142,11 @@ public class Day12 : BaseDay
         }
         if (activeGroup > 0)
         {
-            if (groupsToCheck.FirstOrDefault() == activeGroup)
+            if (length < spring.Length && activeGroup <= groupsToCheck.FirstOrDefault())
+            {
+                return true;
+            }
+            if (length == spring.Length && activeGroup == groupsToCheck.FirstOrDefault())
             {
                 groupsToCheck.Remove(activeGroup);
                 activeGroup = 0;
@@ -137,6 +157,6 @@ public class Day12 : BaseDay
             }
         }
 
-        return !groupsToCheck.Any();
+        return length < spring.Length || !groupsToCheck.Any();
     }
 }
