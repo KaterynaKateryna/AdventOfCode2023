@@ -89,22 +89,23 @@ public class Day12 : BaseDay
 
         if (spring[index] == '?')
         {
-            char[] option = spring.ToArray();
-            option[index] = '#';
-            (bool isValid, int newIndex) = IsValid(option, groups, index, curGroupIndex);
+            spring[index] = '#';
+            (bool isValid, int newIndex) = IsValid(spring, groups, index, curGroupIndex);
             if (isValid)
             {
-                int a = GetPossibleArrangements(option, groups, index + 1, newIndex);
+                int a = GetPossibleArrangements(spring, groups, index + 1, newIndex);
                 count += a;
             }
 
-            option[index] = '.';
-            (isValid, newIndex) = IsValid(option, groups, index, curGroupIndex);
+            spring[index] = '.';
+            (isValid, newIndex) = IsValid(spring, groups, index, curGroupIndex);
             if (isValid)
             {
-                int b = GetPossibleArrangements(option, groups, index + 1, newIndex);
+                int b = GetPossibleArrangements(spring, groups, index + 1, newIndex);
                 count += b;
             }
+
+            spring[index] = '?';
         }
         else
         {
