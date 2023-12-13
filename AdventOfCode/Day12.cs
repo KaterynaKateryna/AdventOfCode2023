@@ -15,10 +15,10 @@ public class Day12 : BaseDay
         foreach (var line in _input)
         {
             string[] parts = line.Split(' ');
-            string spring = parts[0];
+            char[] spring = parts[0].ToArray();
             List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
 
-            spring = Preprocess(spring, groups);
+            Preprocess(spring, groups);
             sum += GetPossibleArrangements(spring, groups);
         }
 
@@ -31,18 +31,18 @@ public class Day12 : BaseDay
         foreach (var line in _input)
         {
             string[] parts = line.Split(' ');
-            string spring = string.Join("?", Enumerable.Repeat(parts[0], 5));
+            char[] spring = string.Join("?", Enumerable.Repeat(parts[0], 5)).ToArray();
             List<int> groups = parts[1].Split(',').Select(x => int.Parse(x)).ToList();
             groups = Enumerable.Repeat(groups, 5).SelectMany(x => x).ToList();
 
-            spring = Preprocess(spring, groups);
+            Preprocess(spring, groups);
             sum += GetPossibleArrangements(spring, groups);
         }
 
         return new(sum.ToString());
     }
 
-    private string Preprocess(string spring, List<int> groups)
+    private void Preprocess(char[] spring, List<int> groups)
     {
         int groupLength = groups.Sum() + groups.Count - 1;
         int springLength = spring.Length;
@@ -62,25 +62,23 @@ public class Day12 : BaseDay
 
             if (leftPos <= rightPos)
             {
-                char[] chars = spring.ToArray();
                 for (int i = leftPos; i <= rightPos; ++i)
                 {
-                    chars[i] = '#';
+                    spring[i] = '#';
                 }
-                spring = new(chars);
             }
 
             groupLength -= (group + 1);
             index += (group + 1);
         }
-        return spring;
     }
 
-    private int GetPossibleArrangements(string spring, List<int> groups, int index = 0)
+    private int GetPossibleArrangements(char[] spring, List<int> groups, int index = 0, int curGroupIndex = 0)
     {
         if (index == spring.Length)
         {
-            if (IsValid(spring, groups, spring.Length))
+            (bool isValid, int _) = IsValid(spring, groups, spring.Length, curGroupIndex);
+            if (isValid)
             {
                 return 1;
             }
@@ -93,70 +91,84 @@ public class Day12 : BaseDay
         {
             char[] option = spring.ToArray();
             option[index] = '#';
-            string optionA = new string(option);
-            if (IsValid(optionA, groups, index + 1))
+            (bool isValid, int newIndex) = IsValid(option, groups, index, curGroupIndex);
+            if (isValid)
             {
-                int a = GetPossibleArrangements(optionA, groups, index + 1);
+                int a = GetPossibleArrangements(option, groups, index + 1, newIndex);
                 count += a;
             }
 
             option[index] = '.';
-            string optionB = new string(option);
-            if (IsValid(optionB, groups, index + 1))
+            (isValid, newIndex) = IsValid(option, groups, index, curGroupIndex);
+            if (isValid)
             {
-                int b = GetPossibleArrangements(optionB, groups, index + 1);
+                int b = GetPossibleArrangements(option, groups, index + 1, newIndex);
                 count += b;
             }
         }
         else
         {
-            count += GetPossibleArrangements(spring, groups, index + 1);
+            (bool isValid, int newIndex) = IsValid(spring, groups, index, curGroupIndex);
+            if (isValid)
+            {
+                count += GetPossibleArrangements(spring, groups, index + 1, newIndex);
+            }
         }
        
         return count;
     }
 
-    private bool IsValid(string spring, List<int> groups, int length)
+    private (bool isValid, int curGroupIndex) IsValid(char[] spring, List<int> groups, int index, int curGroupIndex)
     {
-        List<int> groupsToCheck = new List<int>(groups);
-
-        int activeGroup = 0;
-        for (int i = 0; i < length; ++i)
+        if (index == spring.Length)
         {
-            if (spring[i] == '#')
+            return (curGroupIndex == groups.Count, curGroupIndex);
+        }
+
+        int cur = curGroupIndex == groups.Count ? 0 : groups[curGroupIndex];
+
+        if (spring[index] == '.')
+        {
+            int groupLength = 0;
+            int i = index - 1;
+            while (i >= 0 && spring[i] == '#')
             {
-                activeGroup++;
+                groupLength++;
+                i--;
             }
-            else if (activeGroup > 0)
+
+            if (groupLength > 0)
             {
-                if (groupsToCheck.FirstOrDefault() == activeGroup)
+                if (groupLength == cur)
                 {
-                    groupsToCheck.Remove(activeGroup);
-                    activeGroup = 0;
+                    curGroupIndex++;
                 }
-                else
+                if (groupLength < cur)
                 {
-                    return false;
+                    return (false, curGroupIndex);
                 }
             }
         }
-        if (activeGroup > 0)
+        else if (spring[index] == '#')
         {
-            if (length < spring.Length && activeGroup <= groupsToCheck.FirstOrDefault())
-            {
-                return true;
+            int groupLength = 1;
+            int i = index - 1;
+            while (i >= 0 && spring[i] == '#')
+            { 
+                groupLength++;
+                i--;
             }
-            if (length == spring.Length && activeGroup == groupsToCheck.FirstOrDefault())
+
+            if (groupLength > cur)
             {
-                groupsToCheck.Remove(activeGroup);
-                activeGroup = 0;
+                return (false, curGroupIndex);
             }
-            else
+            else if (groupLength == cur && index == spring.Length - 1)
             {
-                return false;
+                curGroupIndex++;
             }
         }
 
-        return length < spring.Length || !groupsToCheck.Any();
+        return (true, curGroupIndex);
     }
 }
