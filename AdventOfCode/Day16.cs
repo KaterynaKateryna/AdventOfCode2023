@@ -1,5 +1,4 @@
-﻿
-namespace AdventOfCode;
+﻿namespace AdventOfCode;
 
 public class Day16 : BaseDay
 {
@@ -12,13 +11,53 @@ public class Day16 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
+        return new(GetEnergizedCount(new(new Point(0, 0), Direction.Right)).ToString());
+    }
+
+    public override ValueTask<string> Solve_2()
+    {
+        int maxCount = 0;
+        for (int i = 0; i < _input.Length; ++i)
+        {
+            int cnt = GetEnergizedCount(new Move(new Point(i, 0), Direction.Right));
+            if (cnt > maxCount)
+            { 
+                maxCount = cnt;
+            }
+
+            cnt = GetEnergizedCount(new Move(new Point(i, _input[0].Length - 1), Direction.Left));
+            if (cnt > maxCount)
+            {
+                maxCount = cnt;
+            }
+        }
+
+        for (int j = 0; j < _input[0].Length; ++j)
+        {
+            int cnt = GetEnergizedCount(new Move(new Point(0, j), Direction.Down));
+            if (cnt > maxCount)
+            {
+                maxCount = cnt;
+            }
+
+            cnt = GetEnergizedCount(new Move(new Point(_input.Length - 1, j), Direction.Up));
+            if (cnt > maxCount)
+            {
+                maxCount = cnt;
+            }
+        }
+
+        return new(maxCount.ToString());
+    }
+
+    private int GetEnergizedCount(Move start)
+    {
         HashSet<Move> energized = new HashSet<Move>();
         Stack<Move> toVisit = new Stack<Move>();
 
-        Point start = new Point(0, 0);
-        toVisit.Push(new(start, Direction.Right));
+        toVisit.Push(start);
 
-        while (toVisit.Any()) 
+        while (toVisit.Any())
         {
             Move visited = toVisit.Pop();
             if (energized.Add(visited))
@@ -34,12 +73,7 @@ public class Day16 : BaseDay
                 }
             }
         }
-        return new(energized.Select(x => x.Point).Distinct().Count().ToString());
-    }
-
-    public override ValueTask<string> Solve_2()
-    {
-        return new("TBD");
+        return energized.Select(x => x.Point).Distinct().Count();
     }
 
     private (Move one, Move two) NextMove(Move current)
@@ -91,6 +125,8 @@ public class Day16 : BaseDay
         Down,
         Up
     }
-    
-    private record Move(Point Point, Direction Direction);
+
+    private record Move(Point Point, Direction Direction)
+    {
+    }
 }
