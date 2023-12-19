@@ -58,7 +58,127 @@ public class Day19 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new("TBD");
+        long res = GetAcceptedParts();
+
+        return new(res.ToString());
+    }
+
+    private long GetAcceptedParts(
+        string workflow = "in", 
+        long xMin = 1,
+        long xMax = 4000,
+        long mMin = 1,
+        long mMax = 4000,
+        long aMin = 1,
+        long aMax = 4000,
+        long sMin = 1,
+        long sMax = 4000
+    )
+    {
+        Workflow current = _workflows[workflow];
+
+        long parts = 0;
+
+        foreach (Rule rule in current.Rules)
+        {
+            long prevValue = 0;
+            if (rule.Condition != null)
+            {
+                switch ((rule.Condition.Property, rule.Condition.Operation))
+                {
+                    case ('x', '>'):
+                        prevValue = xMin;
+                        xMin = rule.Condition.Value + 1;
+                        break;
+                    case ('x', '<'):
+                        prevValue = xMax;
+                        xMax = rule.Condition.Value - 1;
+                        break;
+                    case ('m', '>'):
+                        prevValue = mMin;
+                        mMin = rule.Condition.Value + 1;
+                        break;
+                    case ('m', '<'):
+                        prevValue = mMax;
+                        mMax = rule.Condition.Value - 1;
+                        break;
+                    case ('a', '>'):
+                        prevValue = aMin;
+                        aMin = rule.Condition.Value + 1;
+                        break;
+                    case ('a', '<'):
+                        prevValue = aMax;
+                        aMax = rule.Condition.Value - 1;
+                        break;
+                    case ('s', '>'):
+                        prevValue = sMin;
+                        sMin = rule.Condition.Value + 1;
+                        break;
+                    case ('s', '<'):
+                        prevValue = sMax;
+                        sMax = rule.Condition.Value - 1;
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            if (rule.Result == "R")
+            {
+                parts += 0;
+            }
+            else if (rule.Result == "A")
+            {
+                parts += (xMax - xMin + 1) * (mMax - mMin + 1) * (aMax - aMin + 1) * (sMax - sMin + 1);
+            }
+            else
+            {
+                parts += GetAcceptedParts(rule.Result, xMin, xMax, mMin, mMax, aMin, aMax, sMin, sMax);
+            }
+
+            if (rule.Condition != null)
+            {
+                switch ((rule.Condition.Property, rule.Condition.Operation))
+                {
+                    case ('x', '>'):
+                        xMin = prevValue;
+                        xMax = rule.Condition.Value;
+                        break;
+                    case ('x', '<'):
+                        xMax = prevValue;
+                        xMin = rule.Condition.Value;
+                        break;
+                    case ('m', '>'):
+                        mMin = prevValue;
+                        mMax = rule.Condition.Value;
+                        break;
+                    case ('m', '<'):
+                        mMax = prevValue; 
+                        mMin = rule.Condition.Value;
+                        break;
+                    case ('a', '>'):
+                        aMin = prevValue; 
+                        aMax = rule.Condition.Value;
+                        break;
+                    case ('a', '<'):
+                        aMax = prevValue; 
+                        aMin = rule.Condition.Value;
+                        break;
+                    case ('s', '>'):
+                        sMin = prevValue;
+                        sMax = rule.Condition.Value;
+                        break;
+                    case ('s', '<'):
+                        sMax = prevValue; 
+                        sMin = rule.Condition.Value;
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+
+        return parts;
     }
 
     private bool IsAccepted(Part part, string workflow = "in")
