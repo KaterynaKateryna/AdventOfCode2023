@@ -50,20 +50,23 @@ public class Day14 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        HashSet<string> maps = new HashSet<string>();
+        List<string> maps = new List<string>();
 
-        string key = "";
-        do
+        string key = string.Join(Environment.NewLine, _input.Select(l => new string(l)));
+        while (!maps.Contains(key))
         {
+            maps.Add(key);
+
             Cycle();
             key = string.Join(Environment.NewLine, _input.Select(l => new string(l)));
         }
-        while (maps.Add(key));
 
+        int cycleStart = maps.IndexOf(key);
+        int cycleLength = maps.Count - cycleStart;
 
-        int rest = 1_000_000_000 % maps.Count;
+        int rest = (1_000_000_000 - maps.Count) % cycleLength;
 
-        for (int i = 0; i < rest - 1; ++i)
+        for (int i = 0; i < rest; ++i)
         {
             Cycle();
         }
